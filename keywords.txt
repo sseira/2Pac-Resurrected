@@ -1,0 +1,5 @@
+n-grams
+feature extractor
+lyric generation
+clustering 
+literary features
