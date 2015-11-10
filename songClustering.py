@@ -110,8 +110,8 @@ lil_wayne = 'lil_wayne'
 eminem = 'eminem'
 
 
-songs = getSongsForArtist(jayz)
-songsFeatureVectors = makeSongsFeatureVector(songs)
-makeSongRelevance('bitches cash', songs, songsFeatureVectors)
+# songs = getSongsForArtist(jayz)
+# songsFeatureVectors = makeSongsFeatureVector(songs)
+# makeSongRelevance('bitches cash', songs, songsFeatureVectors)
 
 	

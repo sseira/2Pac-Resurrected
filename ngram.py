@@ -1,12 +1,13 @@
-from songClustering import getSongsForArtist
+import songClustering 
 from collections import Counter
 import random
 import re
 class rapGenerator(): #nothing yet bitch but it was a search problem
-	def __init__(self, songs, themeWords):
+	def __init__(self, songs, themeWords, songRelevances):
 		self.songs = songs
-		self.themeWords = themeWords
+		self.themeWords = themeWords.split(' ')
 		self.n = 3 #can change this shit
+		self.songRelevances = songRelevances
 
 	def startState(self):
 		return []
@@ -53,8 +54,8 @@ class rapGenerator(): #nothing yet bitch but it was a search problem
 		totalNGrams = {}
 		for title in self.songs:
 			song = re.split(' |\n', self.songs[title])
-			#relevance = getSongRelevance(song, self.themeWords)
-			relevance = 1
+			# relevance = getSongRelevance(song, self.themeWords)
+			relevance = self.songRelevances[title]*.2
 			songNGrams = self.generateNGrams(song, relevance)
 			for key in songNGrams:
 				if key not in totalNGrams:
@@ -84,7 +85,7 @@ class rapGenerator(): #nothing yet bitch but it was a search problem
 		possibleEndings = nGrams[key]
 		for localKey in possibleEndings:
 			nGramSum += possibleEndings[localKey]
-		randKey = random.randrange(0, nGramSum)
+		randKey = random.uniform(0, nGramSum)
 		nGramSum = 0
 		for localKey in possibleEndings:
 			nGramSum += possibleEndings[localKey]
@@ -96,8 +97,11 @@ class rapGenerator(): #nothing yet bitch but it was a search problem
 				return tuple(nextKey)	
 
 # This generates sentence 
-# themeWords = ["boat"]
-# songs = getSongsForArtist('jayz')
-# generator = rapGenerator(songs, themeWords)
-# allWords = generator.generateAllGrams()
-# generator.generateRaps(allWords)
+
+keywords = 'guns money kill'
+songs = songClustering.getSongsForArtist('jayz')
+songsFeatureVectors = songClustering.makeSongsFeatureVector(songs)
+songRelevances = songClustering.makeSongRelevance(keywords, songs, songsFeatureVectors)
+generator = rapGenerator(songs, keywords, songRelevances)
+allWords = generator.generateAllGrams()
+generator.generateRaps(allWords)
