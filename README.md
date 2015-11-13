@@ -1,13 +1,25 @@
 # 2Pac-Resurrected
-###Rule #1
-####Every time you code you must change the description to equally hilarious rap lyrics
 
-Ex) I like the way you activate your hips and stick your ass out, got a nigga wantin it so bad im about to pass out. -2Pac<br>
-Ex) They be like, "He the man," when I'm really a Thundercat - Murphy Lee
+###File Structure
 
-###Less important rules
+
+
+
+<b>ngram.py</b> -> main file that generates raps using an n-gram model influenced by song relevance according to keywords <br>
+<b>rapScraper5000.py</b> -> scrapes song lyrics for chosen artists from allthelyrics.com and stores them as json files <br>
+<b>songClustering.py</b> -> calculates song relevance for every song based on keywords by creating feature vectors based on the frequency of word occurences for songs and taking the dot product of the feature vectors of 2 songs to calculate distance/relvance between 2 songs <br>
+
+<b>xx_lyrics.json</b> -> stores the song objects for every song for artist xx (song title - album name - lyrics) <br>
+<b>xx_links.json</b> -> stores the urls for the artist xx song lyrics (not used, but could be useful in future) <br>
+
+
+
+
+
 ####Explain the code you wrote, plans for next steps, random ideas here:
   
   Step 1) Get data    **** Done **** <br>
-  Step 2) Create a basic n-grams<br>
-  Step 3) Figure out how to make it better than assignment 2 in 106b<br>
+  Step 2) Create a basic n-grams  **** Done **** <br>
+  Step 3) Create a way to influence n-grams based on key word **** Done **** <br>
+  Step 4) Tweak weights/influence of song relevance
+  Step 5) Make it a search problem
