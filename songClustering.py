@@ -74,7 +74,7 @@ def makeSongRelevance(keywords, songs, songsFeatureVectors):
 		for song in idealSongsDict:
 			normalizedWeight = (idealSongsDict[song] - minWeight)/(maxWeight - minWeight)
 			idealSongsDict[song] = normalizedWeight + 2 # range [2:3]
-
+		
 		return idealSongsDict
 
 

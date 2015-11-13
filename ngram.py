@@ -78,7 +78,7 @@ class rapGenerator(): #nothing yet bitch but it was a search problem
 			next = self.getNextWordFromKey(current, nGrams)
 			bars.append(next[len(next) - 1])
 			current = next
-		print bars
+		print " ".join(bars)
 
 	def getNextWordFromKey(self, key, nGrams):
 		nGramSum = 0
@@ -98,8 +98,8 @@ class rapGenerator(): #nothing yet bitch but it was a search problem
 
 # This generates sentence 
 
-keywords = 'guns money kill'
-songs = songClustering.getSongsForArtist('jayz')
+keywords = 'money cars police gun jail'
+songs = songClustering.getSongsForArtist('2pac')
 songsFeatureVectors = songClustering.makeSongsFeatureVector(songs)
 songRelevances = songClustering.makeSongRelevance(keywords, songs, songsFeatureVectors)
 generator = rapGenerator(songs, keywords, songRelevances)
