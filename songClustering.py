@@ -55,6 +55,18 @@ def makeDocumentTermMatrix(songs):
 	return docTermMatrix
 
 
+#Now the dot product t_i, t_p between two term vectors gives the correlation between the terms over the documents. 
+#The matrix product X X^T contains all these dot products. 
+#Element (i,p) (which is equal to element (p,i)) contains the dot product t_i, t_p = t_p, t_i. 
+def makeCorrelationMatrix(docTermMatrix):
+
+	correlationMatrix = {}
+	for word in docTermMatrix: # going down the rows 
+		docTermMatrix[word] = [0]*len(docTermMatrix[word])
+
+		
+
+
 
 
 
