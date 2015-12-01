@@ -40,6 +40,24 @@ def makeSongsFeatureVector(songs):
 	return songsFeatureVectors
 
 
+
+# how to do rank lowering? is it necessary?
+# synonymy ?? best way to do that?
+def makeDocumentTermMatrix(songs):
+	docTermMatrix = {}
+	songTitleList = []
+	for title in songs:
+		songTitleList.append(title)
+		for word in songs[title].split(" "):
+			if word not in docTermMatrix:
+				docTermMatrix[word] = [0]*len(songs)
+			docTermMatrix[word][songTitleList.index(title)] +=1			
+	return docTermMatrix
+
+
+
+
+
 def makeSongRelevance(keywords, songs, songsFeatureVectors):
 	keywordFeatureVector = makeFeatureVectorForSong(keywords)
 
@@ -110,7 +128,8 @@ lil_wayne = 'lil_wayne'
 eminem = 'eminem'
 
 
-# songs = getSongsForArtist(jayz)
+songs = getSongsForArtist(jayz)
+print makeDocumentTermMatrix(songs)
 # songsFeatureVectors = makeSongsFeatureVector(songs)
 # makeSongRelevance('bitches cash', songs, songsFeatureVectors)
 
