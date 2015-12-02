@@ -141,7 +141,7 @@ eminem = 'eminem'
 
 
 songs = getSongsForArtist(jayz)
-print makeDocumentTermMatrix(songs)
+#print makeDocumentTermMatrix(songs)
 # songsFeatureVectors = makeSongsFeatureVector(songs)
 # makeSongRelevance('bitches cash', songs, songsFeatureVectors)
 

@@ -7,15 +7,20 @@ class rapGenerator(): #nothing yet bitch but it was a search problem
 		self.songs = songs
 		self.themeWords = themeWords.split(' ')
 		self.n = 3 #can change this shit
+		self.numLines = 16
 		self.songRelevances = songRelevances
+		self.nGrams = self.generateAllGrams()
 
-	def startState(self):
-		return []
+	def getGrams(self):
+		return self.nGrams
 
-	def isGoal(self, state): 
-		return state.length >= 16 #right now only gets 16 longs
+	def startState(self): #start with no words generated in your sentance 
+		return 
 
-	def succAndCost(self, state):
+	def isGoal(self, state): #you should end when you have enough lines
+		return state.length >= self.numLines #right now only gets 16 longs
+
+	def succAndCost(self, state): #to implement, but will eventually determine best next choice to make
 		return
 
 
@@ -44,10 +49,6 @@ class rapGenerator(): #nothing yet bitch but it was a search problem
 							nGrams[nGramTuple] = currDict
 					else:
 						nGram.append(song[j])
-		# for i, word in enumerate(wrapAround):
-
-		# for key in nGrams:
-		# 	print (key, nGrams[key])
 		return nGrams
 
 	def generateAllGrams(self):
@@ -55,15 +56,13 @@ class rapGenerator(): #nothing yet bitch but it was a search problem
 		for title in self.songs:
 			song = re.split(' |\n', self.songs[title])
 			# relevance = getSongRelevance(song, self.themeWords)
-			relevance = self.songRelevances[title]*.2
+			relevance = self.songRelevances[title]*.2 #change this to change the relevance
 			songNGrams = self.generateNGrams(song, relevance)
 			for key in songNGrams:
 				if key not in totalNGrams:
 					totalNGrams[key] = songNGrams[key]
 				else:
 					totalNGrams[key] = dict(Counter(totalNGrams[key]) + Counter(songNGrams[key]))
-			# for word in totalNGrams:
-			# 	print (word, totalNGrams[word])
 		return totalNGrams
 
 	def generateRaps(self, nGrams):
@@ -73,8 +72,7 @@ class rapGenerator(): #nothing yet bitch but it was a search problem
 		bars = []
 		for word in current:
 			bars.append(word)
-		for i in range(16):
-			# print i, current
+		for _ in range(self.numLines):
 			next = self.getNextWordFromKey(current, nGrams)
 			bars.append(next[len(next) - 1])
 			current = next
@@ -103,5 +101,5 @@ songs = songClustering.getSongsForArtist('2pac')
 songsFeatureVectors = songClustering.makeSongsFeatureVector(songs)
 songRelevances = songClustering.makeSongRelevance(keywords, songs, songsFeatureVectors)
 generator = rapGenerator(songs, keywords, songRelevances)
-allWords = generator.generateAllGrams()
+allWords = generator.getGrams()
 generator.generateRaps(allWords)
