@@ -154,11 +154,9 @@ lil_wayne = 'lil_wayne'
 eminem = 'eminem'
 keywords = ['police', 'guns', 'money', 'gun', 'bullet']
 
-songs = getSongsForArtist(jayz)
-values = makeCorrelationValuesForKeyWord(songs, keywords)
-for keyword in values:
-	print "keyword->", keyword
-	print values[keyword]
+# songs = getSongsForArtist(jayz)
+# values = makeCorrelationValuesForKeyWord(songs, keywords)
+
 # songsFeatureVectors = makeSongsFeatureVector(songs)
 # makeSongRelevance('bitches cash', songs, songsFeatureVectors)
 
