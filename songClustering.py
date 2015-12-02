@@ -50,25 +50,39 @@ def makeDocumentTermMatrix(songs):
 		songTitleList.append(title)
 		for word in songs[title].split(" "):
 			if word not in docTermMatrix:
-				docTermMatrix[word] = [0]*len(songs)
-			docTermMatrix[word][songTitleList.index(title)] +=1			
+				docTermMatrix[word] = {}			
+			if title in docTermMatrix[word]:
+				docTermMatrix[word][title] +=1
+			else:
+				docTermMatrix[word][title] = 1
 	return docTermMatrix
 
 
 #Now the dot product t_i, t_p between two term vectors gives the correlation between the terms over the documents. 
 #The matrix product X X^T contains all these dot products. 
 #Element (i,p) (which is equal to element (p,i)) contains the dot product t_i, t_p = t_p, t_i. 
-def makeCorrelationMatrix(docTermMatrix):
-
+def makeCorrelationValuesForKeyWord(songs, keywords):
+	docTermMatrix = makeDocumentTermMatrix(songs)
 	correlationMatrix = {}
-	for word in docTermMatrix: # going down the rows 
-		docTermMatrix[word] = [0]*len(docTermMatrix[word])
 
-		
+	for keyword in keywords: # going down the rows 
+		if keyword in docTermMatrix: # keyword appears in any song
+			correlationMatrix[keyword] = {}
+			termVec = docTermMatrix[keyword]
+			for word in docTermMatrix:				
+				termVec2 = docTermMatrix[word]
+				correlationMatrix[keyword][word] = dotProduct(termVec, termVec2)
+
+	return correlationMatrix
+		#dot product with everyother word
 
 
-
-
+def dotProduct(termVec, termVec2):
+	dotProduct = 0
+	for key in termVec:
+		if key in termVec2:
+			dotProduct+= termVec[key]*termVec2[key]
+	return dotProduct
 
 def makeSongRelevance(keywords, songs, songsFeatureVectors):
 	keywordFeatureVector = makeFeatureVectorForSong(keywords)
@@ -138,11 +152,9 @@ jayz = 'jayz'
 kanye = 'kanye_west'
 lil_wayne = 'lil_wayne'
 eminem = 'eminem'
+keywords = ['police', 'guns', 'money', 'gun', 'bullet']
 
-
-songs = getSongsForArtist(jayz)
-#print makeDocumentTermMatrix(songs)
-# songsFeatureVectors = makeSongsFeatureVector(songs)
-# makeSongRelevance('bitches cash', songs, songsFeatureVectors)
+# songs = getSongsForArtist(jayz)
+# values = makeCorrelationValuesForKeyWord(songs, keywords)
 
 	
