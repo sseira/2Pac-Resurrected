@@ -2,11 +2,12 @@ import songClustering
 from collections import Counter
 import random
 import re
-class rapGenerator(): #nothing yet bitch but it was a search problem
+import util
+class rapGenerator(util.SearchProblem): #nothing yet bitch but it was a search problem
 	def __init__(self, songs, themeWords, songRelevances):
 		self.songs = songs
 		self.themeWords = themeWords.split(' ')
-		self.n = 3 #can change this shit
+		self.n = 2 #can change this shit
 		self.numLines = 16
 		self.songRelevances = songRelevances
 		self.nGrams = self.generateAllGrams()
@@ -15,15 +16,25 @@ class rapGenerator(): #nothing yet bitch but it was a search problem
 		return self.nGrams
 
 	def startState(self): #start with no words generated in your sentance 
-		return 
+		keyList = self.nGrams.keys()
+		startKey = random.randrange(0, len(keyList))
+		current = keyList[startKey]
+		state = (current, 0)
+		return state
 
 	def isGoal(self, state): #you should end when you have enough lines
-		return state.length >= self.numLines #right now only gets 16 longs
+		return state[1] >= self.numLines #right now only gets 16 longs
 
 	def succAndCost(self, state): #to implement, but will eventually determine best next choice to make
-		return
+		cost = 0 #fix this when you have actual costs
+		results = []
+		nextWord = self.getNextWordFromKey(state[0])
+		nextState = (nextWord, state[1] + 1)
+		results.append((nextWord, nextState, cost))
+		return results
 
-
+	#Given a song and a relevance factor 
+	#returns a dictionary of n-1 words to a list of possible completion words
 	def generateNGrams(self, song, relevance):
 		nGrams = {}
 		length = len(song)
@@ -51,12 +62,14 @@ class rapGenerator(): #nothing yet bitch but it was a search problem
 						nGram.append(song[j])
 		return nGrams
 
+    #Given all the songs, goes through each, generates ngrams for each
+    #Then adds all ngrams to each other to generate a total ngram model
 	def generateAllGrams(self):
 		totalNGrams = {}
 		for title in self.songs:
 			song = re.split(' |\n', self.songs[title])
 			# relevance = getSongRelevance(song, self.themeWords)
-			relevance = self.songRelevances[title]*.2 #change this to change the relevance
+			relevance = self.songRelevances[title] #change this to change the relevance
 			songNGrams = self.generateNGrams(song, relevance)
 			for key in songNGrams:
 				if key not in totalNGrams:
@@ -65,6 +78,7 @@ class rapGenerator(): #nothing yet bitch but it was a search problem
 					totalNGrams[key] = dict(Counter(totalNGrams[key]) + Counter(songNGrams[key]))
 		return totalNGrams
 
+	#Generates raps (out)
 	def generateRaps(self, nGrams):
 		keyList = nGrams.keys()
 		startKey = random.randrange(0, len(keyList))
@@ -78,9 +92,9 @@ class rapGenerator(): #nothing yet bitch but it was a search problem
 			current = next
 		print " ".join(bars)
 
-	def getNextWordFromKey(self, key, nGrams):
+	def getNextWordFromKey(self, key):
 		nGramSum = 0
-		possibleEndings = nGrams[key]
+		possibleEndings = self.nGrams[key]
 		for localKey in possibleEndings:
 			nGramSum += possibleEndings[localKey]
 		randKey = random.uniform(0, nGramSum)
@@ -100,6 +114,8 @@ keywords = 'money cars police gun jail'
 songs = songClustering.getSongsForArtist('2pac')
 songsFeatureVectors = songClustering.makeSongsFeatureVector(songs)
 songRelevances = songClustering.makeSongRelevance(keywords, songs, songsFeatureVectors)
-generator = rapGenerator(songs, keywords, songRelevances)
-allWords = generator.getGrams()
-generator.generateRaps(allWords)
+ucs = util.UniformCostSearch(verbose = 0)
+ucs.solve(rapGenerator(songs, keywords, songRelevances))
+for action in ucs.actions:
+	print action[0],
+ 
