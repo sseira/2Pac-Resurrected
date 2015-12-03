@@ -1,79 +1,138 @@
 import songClustering 
 from collections import Counter
 import random
-import re
+import string, timeit
 import util
 import copy
+import rhymingSauce
+import re
 class rapGenerator(util.SearchProblem): #nothing yet bitch but it was a search problem
-	def __init__(self, songs, themeWords):
+	def __init__(self, songs, themeWords, correlationMatrix):
+		print "start initializing"
 		self.songs = songs
 		self.themeWords = themeWords.split(' ')
 		self.n = 3 #can change this shit
-		self.numLines = 2
-		self.lineLength = 10 #eventually be the average number of words in a line
+		self.numLines = 4
+		self.maxLineLength = 5 #eventually be the average number of words in a line
 		self.nGrams = self.generateAllGrams()
-
+		self.rhymingDict = rhymingSauce.readRhymingDict()
+		self.correlationMatrix = correlationMatrix
+		print "Done initializing"
 	def getGrams(self):
 		return self.nGrams
 
 	#state is represented by:
 	#the previous n-1 words
 	#the total number of lines
-	#whether we're in the first line or not (boolean)
+	#whether we're in the second line or not (boolean)
 	#how many words we have in the current line
-	def startState(self): #start with no words generated in your sentance 
+	#word to rhyme
+	def startState(self): #start with no words generated in your sentance
+
 		keyList = self.nGrams.keys()
 		startKey = random.randrange(0, len(keyList))
 		current = keyList[startKey]
-		state = (current, 0, False, 0)
+		state = (current, 0, 0, None)
+
 		return state
 
 
 	def isGoal(self, state): #you should end when you have enough lines
 		return state[1] >= self.numLines #right now only gets 16 longs
 
-	#Given a current state (which consists of the previous n-1 words, total num lines, whether we're in the first line, and num words in current line)
+	#Given a current state (which consists of the previous n-1 words, total num lines, whether we're in the second line, and num words in current line)
 	#Looks at all possible successor words 
 	def succAndCost(self, state): #to implement, but will eventually determine best next choice to make
-		if(state[3] == self.lineLength):
+		#print state[3]
+
+		currentWords = state[0]
+		numLines = state[1]
+		currentLineLength = state[2]
+		wordToRhyme = state[3]
+
+		atLastWord = False
+		rhymingCost = 0
+		coherentCost = 0
+		shouldCheckRhyme = False
+
+
+		if currentLineLength == self.maxLineLength - 2 : #is the last word in the line ... 5 words ->{1,2,3,4, ...}
+			atLastWord = True
+			if numLines%2 == 0: # were in line 0,2,4,6 (i.e. we should CHOOSE the rhyming word here)
+				shouldCheckRhyme = False
+			else: #i.e. we should CHECK the word we have with the rhyming Word we chose last line
+				shouldCheckRhyme = True # we just chose a word 
+
+
+		if currentLineLength == self.maxLineLength - 1 : #we're at the end of the line and want to reset lineLength
 			currentLineLength = 0
-			numLines = state[1] + 1
-			secondLine = not state[2]
-		else: 
-			currentLineLength = state[3] + 1
-			numLines = state[1]
-			secondLine = False
+			numLines = numLines + 1
+		else: #we just want to add one word
+			currentLineLength = currentLineLength + 1
+
 		cost = 0 #fix this when you have actual costs
 		results = []
-		wordsAndWeights = self.getNextWordFromKey(state[0]) #shifts the next window
+		wordsAndWeights = self.getNextWordFromKey(currentWords) #shifts the next window
+
 		for wordAndWeight in wordsAndWeights:
 			nextWord = wordAndWeight[0]
 			cost = wordAndWeight[1]
-			if(not self.wordsRhyme(state[self.n - 2], nextWord[self.n - 2])):
-				cost += 100000
-			nextState = (nextWord, numLines, secondLine, currentLineLength) #change this to update the line bool etc.
+			#print cost
+			if(atLastWord):
+				if(not shouldCheckRhyme): #we're setting the word to rhyme to be the word we're about to choose
+					wordToRhyme = nextWord[self.n - 2]
+				else: #we're checking whether the two words rhyme
+					#print "checking words?"
+					if not rhymingSauce.doTheseWordsRhyme(wordToRhyme, nextWord[self.n - 2], self.rhymingDict):
+						#print "not rhyme"
+						cost += 10000
+
+			nextState = (nextWord, numLines, currentLineLength, wordToRhyme) #change this to update the line bool etc.
 			results.append((nextWord, nextState, cost))
 
 		return results
 
-	def wordsRhyme(self, word1, word2):
-		return True
+	def relevanceWeight(self, newWord):
+		relevance = 1
+		for keyword in self.correlationMatrix:
+			if newWord in self.correlationMatrix[keyword]:
+				# print "relevance->",newWord ,self.correlationMatrix[keyword][newWord]
+				relevance+=self.correlationMatrix[keyword][newWord]
+		if relevance == 1:
+			print "not found->", newWord
+		return relevance
+
+	def normalizeDenominatorValue(self, possibleEndings, nGramSum):
+		totalSum = 0
+		for localKey in possibleEndings:
+			cost = float(possibleEndings[localKey]) / nGramSum
+			cost *= self.relevanceWeight(localKey)
+			totalSum += cost
+		return totalSum
+
+	def normalizeRelevanceCost(self, cost, newWord, normalizeDenominator):
+		return cost*self.relevanceWeight(newWord)/normalizeDenominator
 
 	def getNextWordFromKey(self, key):
 		nGramSum = 0
 		endingsAndWeights = []
 		possibleEndings = self.nGrams[key]
 		nextKey = []
+		finalKey = key[-1]
 		for localKey in possibleEndings:
 			nGramSum += possibleEndings[localKey]
+
+		normalizeDenominator = self.normalizeDenominatorValue(possibleEndings, nGramSum)
+
 		for i in range(1, len(key)):
 			nextKey.append(key[i])
 		for localKey in possibleEndings:
-			weight = float(possibleEndings[localKey]) / nGramSum
+			cost = float(possibleEndings[localKey]) / nGramSum
+			cost = self.normalizeRelevanceCost(cost, localKey, normalizeDenominator)
 			tempKey = copy.deepcopy(nextKey)
 			tempKey.append(localKey)
 			if(tuple(tempKey) in self.nGrams):
-				endingsAndWeights.append((tuple(tempKey), weight))
+				endingsAndWeights.append((tuple(tempKey), cost))
 		return endingsAndWeights
 		# 	nGramSum += possibleEndings[localKey]
 		# randKey = random.uniform(0, nGramSum)
@@ -93,8 +152,7 @@ class rapGenerator(util.SearchProblem): #nothing yet bitch but it was a search p
 		length = len(song)
 		wrapAround = []
 		for i, word in enumerate(song):
-			if(i < self.n):
-				wrapAround.append(word) # YO FIX THIS OTHERWISE SMALL BUG
+			# word = re.sub(ur"\p{P}+", "", word)
 			nGram = []
 			for j in range(i, i + self.n):
 				if(j < length):
@@ -152,20 +210,20 @@ lil_wayne = 'lil_wayne'
 eminem = 'eminem'
 
 # This generates sentence 
-lineLength = 10
+lineLength = 5
 keywords = 'money cars police gun jail'
 songs = {}
-songs.update(songClustering.getSongsForArtist(pac))
+# songs.update(songClustering.getSongsForArtist(pac))
 # songs.update(songClustering.getSongsForArtist(jayz))
 # songs.update(songClustering.getSongsForArtist(kanye))
-# songs.update(songClustering.getSongsForArtist(lil_wayne))
-# songs.update(songClustering.getSongsForArtist(eminem))
+songs.update(songClustering.getSongsForArtist(lil_wayne))
+songs.update(songClustering.getSongsForArtist(eminem))
 correlationMatrix = songClustering.makeCorrelationValuesForKeyWord(songs, keywords)
 #print correlationMatrix
 ucs = util.UniformCostSearch(verbose = 0)
-ucs.solve(rapGenerator(songs, keywords))
+ucs.solve(rapGenerator(songs, keywords, correlationMatrix))
 for i, action in enumerate(ucs.actions):
 	print action[0],
-	# if((i + 1) % lineLength == 0):
-	# 	print "\n"
+	if((i + 1) % (lineLength) == 0):
+		print "\n"
  # 

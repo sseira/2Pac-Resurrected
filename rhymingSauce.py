@@ -1,5 +1,10 @@
-import rapScraper5000
 import codecs, json
+from types import * 
+import re, string, timeit
+def writeFile(fileName, data):
+	with open(fileName, 'w') as outfile:
+    		json.dump(data, outfile)
+
 
 def findRhymingPart(line):
 	words = line.split(" ")
@@ -42,13 +47,83 @@ def readCMUPhoneticDictionary():
 			else:	
 				rhymingDict[word] = findRhymingPart(line)
 	
-	rapScraper5000.writeFile("RhymingDict.json", rhymingDict)
+	writeFile("RhymingDict.json", rhymingDict)
 
 
-def doTheseWordsRhyme(word, word2):
+def readRhymingDict():
 	with open("RhymingDict.json") as data_file:    
-		rhymingDict = json.load(data_file)
-		return rhymingDict[word.upper()] == rhymingDict[word2.upper()]
+		return json.load(data_file)
+
+
+def doTheseWordsRhyme(word, word2, rhymingDict):
+	
+	try:
+		word = str(word)
+	except:
+		#print "not even a unicode", word
+		return False
+	try:
+		word2 = str(word2)
+	except:
+		#print "not even a unicode", word2
+		return False
+
+	exclude = set(string.punctuation)
+	word = ''.join(ch for ch in word if ch not in exclude)	
+	word2 = ''.join(ch for ch in word2 if ch not in exclude)
+	if not word.isalpha() and not word2.isalpha():
+		#print "not strings", word, word2
+		return False
+
+	if word.upper() not in rhymingDict:
+		# print "not in dict", word
+		suffix = word[-2:].upper()
+		# print "suffix->", suffix
+		foundWord = False
+		for possibleWord in rhymingDict:
+			# print "possibleWord->", possibleWord
+			# print "pssible suffix->", possibleWord[-2:]
+			if len(possibleWord)> 2 and possibleWord[-2:] == suffix:
+				word = possibleWord
+				# print "FOUND WORD->", possibleWord
+				foundWord = True
+				break
+		if not foundWord:
+			# print "word->", word
+			return False
+
+		# return False
+	if word2.upper() not in rhymingDict:
+		# print "not in dict", word2
+		suffix = word2[-2:].upper()
+		# print "suffix->", suffix
+		foundWord = False
+		for possibleWord in rhymingDict:
+			# print "possibleWord->", possibleWord
+			# print "pssible suffix->", possibleWord[-2:]
+			if len(possibleWord)> 2 and possibleWord[-2:] == suffix:
+				word2 = possibleWord
+				# print "FOUND WORD!!!!->", possibleWord
+				foundWord = True
+				break
+		if not foundWord:
+			# print "word2->", word2
+			return False
+		# return False
+		#word.upper()[-2:] == word.upper()[-2:]
+	# if not isinstance(word, unicode) and not isinstance(word2, unicode):
+	# 	print "not strings", word, word2
+
+	# 	return False
+	# with open("RhymingDict.json") as data_file:    
+	# 	rhymingDict = json.load(data_file)
+	#print "word ->", rhymingDict[word.upper()]
+	#print "word2 ->", rhymingDict[word2.upper()]
+
+	if rhymingDict[word.upper()] == rhymingDict[word2.upper()]:
+		#print "rhyming ->", word, word2
+		return True
+	return False
 
 
 # def findRhymes():
