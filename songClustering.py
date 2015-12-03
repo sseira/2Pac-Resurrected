@@ -1,6 +1,6 @@
 import json
 import Queue 
-
+import re
 
 def getSongsForArtist(artist):
 	file_name = artist + '_lyrics.json'
@@ -14,7 +14,10 @@ def getSongsForArtist(artist):
 
 def makeFeatureVectorForSong(song):
 	featureVector = {}
-	for word in song.split(" "):
+	song = re.split(' |\n', self.songs[title])
+	for word in song:
+		if word == "similing":
+			print "found similing!"
 		# clean up words a bit, make alpha only 
 		if word in featureVector:
 			featureVector[word] += 1
@@ -46,9 +49,10 @@ def makeSongsFeatureVector(songs):
 def makeDocumentTermMatrix(songs):
 	docTermMatrix = {}
 	songTitleList = []
+	print "well fuck you too"
 	for title in songs:
 		songTitleList.append(title)
-		for word in songs[title].split(" "):
+		for word in re.split(' |\n', songs[title]):
 			if word not in docTermMatrix:
 				docTermMatrix[word] = {} # every word in every song is a key in the docTermMatrix
 

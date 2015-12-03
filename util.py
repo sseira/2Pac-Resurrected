@@ -48,6 +48,7 @@ class UniformCostSearch(SearchAlgorithm):
         while True:
             # Remove the state from the queue with the lowest pastCost
             # (priority).
+
             state, pastCost = frontier.removeMin()
             if state == None: break
             self.numStatesExplored += 1
@@ -72,6 +73,7 @@ class UniformCostSearch(SearchAlgorithm):
             # Expand from |state| to new successor states,
             # updating the frontier with each newState.
             for action, newState, cost in problem.succAndCost(state):
+
                 if self.verbose >= 3:
                     print "  Action %s => %s with cost %s + %s" % (action, newState, pastCost, cost)
                 if frontier.update(newState, pastCost + cost):
@@ -86,6 +88,7 @@ class PriorityQueue:
         self.DONE = -100000
         self.heap = []
         self.priorities = {}  # Map from state to priority
+        self.maxSize = 10
 
     # Insert |state| into the heap with priority |newPriority| if
     # |state| isn't in the heap or |newPriority| is smaller than the existing
@@ -94,7 +97,10 @@ class PriorityQueue:
     def update(self, state, newPriority):
         oldPriority = self.priorities.get(state)
         if oldPriority == None or newPriority < oldPriority:
-            self.priorities[state] = newPriority
+            # before we add a new state onto this queue, if we are at max size, 
+                # only add it if the new priority is "better" than the current wosrt one 
+            # if state is new, then we are adding a key to this dictionary 
+            self.priorities[state] = newPriority # is where we add to to queue
             heapq.heappush(self.heap, (newPriority, state))
             return True
         return False
