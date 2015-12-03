@@ -73,7 +73,7 @@ jayz = 'jayz'
 kanye = 'kanye_west'
 lil_wayne = 'lil_wayne'
 eminem = 'eminem'
-scrapeArtist(url, eminem)
+# scrapeArtist(url, eminem)
 
 
 
