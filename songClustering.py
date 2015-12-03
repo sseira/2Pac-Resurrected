@@ -50,8 +50,9 @@ def makeDocumentTermMatrix(songs):
 		songTitleList.append(title)
 		for word in songs[title].split(" "):
 			if word not in docTermMatrix:
-				docTermMatrix[word] = {}			
-			if title in docTermMatrix[word]:
+				docTermMatrix[word] = {} # every word in every song is a key in the docTermMatrix
+
+			if title in docTermMatrix[word]: # appearances of word in song
 				docTermMatrix[word][title] +=1
 			else:
 				docTermMatrix[word][title] = 1
